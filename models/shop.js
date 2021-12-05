@@ -45,5 +45,6 @@ function photoPath(photo) {
 }
 
 shopSchema.set('toObject', { getters: true })
+shopSchema.set('toJSON', { getters: true })
 
 module.exports = mongoose.model('Shop', shopSchema)
