@@ -1,0 +1,9 @@
+node_modules
+.env
+/images/shops/*.png
+/images/shops/*.jpg
+/images/shops/*.jpeg
+/images/products/*.png
+/images/products/*.jpg
+/images/products/*.jpeg
+.DS_store
