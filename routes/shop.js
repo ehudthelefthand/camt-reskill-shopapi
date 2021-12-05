@@ -8,9 +8,9 @@ const fs = require('fs')
 const crypto = require('crypto')
 const Shop = require('../models/shop')
 const auth = require('../middlewares/auth')
+const Product = require('../models/product')
 
 const SECRET = process.env.SECRET || 'secret'
-const TOKEN_EXPIRE = process.env.TOKEN_EXPIRE || '8h'
 
 const router = express.Router()
 const PHOTO_PATH = 'images/shops/'
@@ -116,6 +116,7 @@ router.put('/myshop', auth, upload.single('photo'), asyncHandler(async (req, res
     if (category) {
         shop.category = category
     }
+    await shop.save()
     if (req.file && req.file.filename) {
         const oldfilename = shop.photo
         shop.photo = req.file.filename
@@ -128,15 +129,15 @@ router.put('/myshop', auth, upload.single('photo'), asyncHandler(async (req, res
             }
         }
     }
-    await shop.save()
     res.sendStatus(204)
 }))
 
 router.get('/shops', asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1
     const limit = Number(req.query.limit) || 10
+    const search = req.query.search || '.*'
     const shops = await Shop
-        .find()
+        .find({ name: { $regex: search, $options: 'i' } })
         .skip((page-1) * limit)
         .limit(limit)
         .exec()
@@ -150,6 +151,23 @@ router.get('/shops/:shopId', asyncHandler(async (req, res) => {
         return
     }
     res.json(shop)
+}))
+
+router.get('/shops/:shopId/products', asyncHandler(async (req, res) => {
+    const shop = await Shop.findById(req.params.shopId).exec()
+    if (!shop) {
+        res.sendStatus(404)
+        return
+    }
+
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 10
+    const products = await Product
+        .find({ shop: shop._id })
+        .skip((page-1) * limit)
+        .limit(limit)
+        .exec()
+    res.json(products)
 }))
 
 router.delete('/shops/:shopId', asyncHandler(async (req, res) => {

@@ -5,7 +5,7 @@ const morgan = require('morgan')
 const cors = require('cors')
 
 const shopRoute = require('./routes/shop')
-// const productRoute = require('./routes/product')
+const productRoute = require('./routes/product')
 
 const DB_HOST = process.env.DB_HOST || 'mongodb://localhost/shop_db'
 const PORT = process.env.PORT || 3000
@@ -19,8 +19,7 @@ app.use(morgan('dev'))
 app.use(cors())
 
 app.use('/', shopRoute)
-// app.use('/shops', shopRoute)
-// app.use('/products', productShop)
+app.use('/products', productRoute)
 
 app.use((err, req, res, next) => {
     console.log(err)
