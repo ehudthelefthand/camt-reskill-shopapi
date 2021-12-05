@@ -133,7 +133,13 @@ router.put('/myshop', auth, upload.single('photo'), asyncHandler(async (req, res
 }))
 
 router.get('/shops', asyncHandler(async (req, res) => {
-    const shops = await Shop.find().exec()
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 10
+    const shops = await Shop
+        .find()
+        .skip((page-1) * limit)
+        .limit(limit)
+        .exec()
     res.json(shops)
 }))
 
