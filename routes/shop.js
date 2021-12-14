@@ -9,6 +9,7 @@ const crypto = require('crypto')
 const Shop = require('../models/shop')
 const auth = require('../middlewares/auth')
 const Product = require('../models/product')
+const product = require('../models/product')
 
 const SECRET = process.env.SECRET || 'secret'
 
@@ -136,12 +137,16 @@ router.get('/shops', asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1
     const limit = Number(req.query.limit) || 10
     const search = req.query.search || '.*'
+    const total = await Shop.count().exec()
     const shops = await Shop
         .find({ name: { $regex: search, $options: 'i' } })
         .skip((page-1) * limit)
         .limit(limit)
         .exec()
-    res.json(shops)
+    res.json({
+        data: shops,
+        total
+    })
 }))
 
 router.get('/shops/:shopId', asyncHandler(async (req, res) => {
@@ -159,7 +164,10 @@ router.get('/shops/:shopId/products', asyncHandler(async (req, res) => {
         res.sendStatus(404)
         return
     }
-
+    const total = await Product
+        .find({ shop: shop._id })
+        .count()
+        .exec()
     const page = Number(req.query.page) || 1
     const limit = Number(req.query.limit) || 10
     const products = await Product
@@ -167,7 +175,10 @@ router.get('/shops/:shopId/products', asyncHandler(async (req, res) => {
         .skip((page-1) * limit)
         .limit(limit)
         .exec()
-    res.json(products)
+    res.json({ 
+        data: products,
+        total
+    })
 }))
 
 router.delete('/shops/:shopId', asyncHandler(async (req, res) => {

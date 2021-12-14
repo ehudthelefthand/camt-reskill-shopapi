@@ -5,6 +5,7 @@ const multer = require('multer')
 const fs = require('fs')
 const Product = require('../models/product')
 const auth = require('../middlewares/auth')
+const product = require('../models/product')
 
 const router = express.Router()
 const PHOTO_PATH = 'images/products/'
@@ -108,12 +109,16 @@ router.get('/', asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1
     const limit = Number(req.query.limit) || 10
     const search = req.query.search || '.*'
+    const total = await Product.count().exec()
     const products = await Product
         .find({ name: { $regex: search, $options: 'i' } })
         .skip((page-1) * limit)
         .limit(limit)
         .exec()
-    res.json(products)
+    res.json({
+        data: products,
+        total
+    })
 }))
 
 module.exports = router
